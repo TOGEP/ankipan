@@ -5,9 +5,7 @@ create table users (
   name varchar(255) not null,
   email varchar(255) not null,
   token varchar(255) not null unique,
-  google_id varchar(255) not null unique,
-  twitter_id varchar(255) not null unique,
-  facebook_id varchar(255) not null unique,
+  uid varchar(255) not null unique,
   created_at datetime not null
 );
 
