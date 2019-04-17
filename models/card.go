@@ -6,11 +6,3 @@ type Card struct {
   Anser string `db:"anser" json:"anser"`
   Note string `db:"note" json:"note"`
 }
-
-/*
-type InputObjectConfig struct {
-    Name        string      `json:"name"`
-    Fields      interface{} `json:"fields"`
-    Description string      `json:"description"`
-}*/
-
