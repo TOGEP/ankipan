@@ -1,13 +1,12 @@
 package main
 
 import (
-	"./models"
 	"database/sql"
-	"fmt"
+	"net/http"
+
+	"./models"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
-	"net/http"
-	"time"
 )
 
 func main() {
@@ -18,7 +17,6 @@ func main() {
 }
 
 func CreateCard(c echo.Context) error {
-	t := time.Now()
 	db, err := sql.Open("mysql", "root:@/ankipan")
 	if err != nil {
 		panic(err.Error())
@@ -31,13 +29,11 @@ func CreateCard(c echo.Context) error {
 
 	card := models.Card{Problem: problem, Anser: anser, Note: note}
 
-	query := "INSERT INTO cards values(0,0,?,?,?,?)"
-	result, err := db.Exec(query, problem, anser, note, t)
+	//fixme user_idは仮置き
+	query := "INSERT INTO cards(user_id, problem_statement, answer_text, memo, question_time) values(0,?,?,?,NOW())"
+	_, err = db.Exec(query, problem, anser, note)
 	if err != nil {
 		panic(err.Error())
-	}
-	if lastId, lerr := result.LastInsertId(); lerr != nil {
-		fmt.Println("insert last id: %d", lastId)
 	}
 
 	return c.JSON(http.StatusOK, card)
