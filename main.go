@@ -40,9 +40,5 @@ func CreateCard(c echo.Context) error {
 		fmt.Println("insert last id: %d", lastId)
 	}
 
-	fmt.Println(card)
-	fmt.Println(problem)
-	fmt.Println(anser)
-	fmt.Println(note)
 	return c.JSON(http.StatusOK, card)
 }
