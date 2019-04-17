@@ -14,7 +14,6 @@ func main() {
 	e := echo.New()
 	e.File("/", "views/page1.html")
 	e.POST("/create", CreateCard)
-	//  e.POST("/login", CreateUser)
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
