@@ -3,39 +3,29 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"html/template"
-	"log"
 	"net/http"
-
+  "time"
 	"./models"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
 )
 
-type Template struct {
-	templates *template.Template
-}
 
 func main() {
-	/*  db, err := sql.Open("mysql", "root:@/ankipan_card")
-	      if err != nil {
-	      panic(err.Error())
-	    }
-	    defer db.Close()*/
-
 	e := echo.New()
 	e.File("/", "views/page1.html")
 	e.POST("/create", CreateCard)
-
+  e.POST("/login", CreateUser)
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
 func CreateCard(c echo.Context) error {
-	db, err := sql.Open("mysql", "root:@/ankipan_card")
-	if err != nil {
-		panic(err.Error())
-	}
-	defer db.Close()
+  t := time.Now();
+  db, err := sql.Open("mysql", "root:@/ankipan_card")
+  if err != nil {
+    panic(err.Error())
+  }
+  defer db.Close()
 
 	problem := c.FormValue("problem")
 	anser := c.FormValue("anser")
@@ -43,17 +33,15 @@ func CreateCard(c echo.Context) error {
 
 	card := models.Card{Problem: problem, Anser: anser, Note: note}
 
-	query := "INSERT INTO user values(null,?,?,?,?)"
-	result, err := db.Exec(query, "card", "problem", "anser", "note")
+	//query := "INSERT INTO cards(problem_statement, answer_text, memo)values(?,?,?)"
+	//result, err := db.Exec(query, "problem", "anser", "note")
+  query := "INSERT INTO cards values(0,0,?,?,?,?)"
+  result, err := db.Exec(query, "problem","anser","note",t)
 	if err != nil {
 		panic(err.Error())
 	}
-	rows, err := result.RowsAffected()
-	if err != nil {
-		log.Fatal(err)
-	}
-	if rows != 1 {
-		log.Fatalf("expected to affect 1 row, affected %d", rows)
+	if lastId, lerr := result.LastInsertId(); lerr != nil {
+		fmt.Println("insert last id: %d", lastId)
 	}
 
 	fmt.Println(card)
