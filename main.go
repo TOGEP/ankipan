@@ -1,31 +1,30 @@
 package main
 
 import (
+	"./models"
 	"database/sql"
 	"fmt"
-	"net/http"
-  "time"
-	"./models"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
+	"net/http"
+	"time"
 )
-
 
 func main() {
 	e := echo.New()
 	e.File("/", "views/page1.html")
 	e.POST("/create", CreateCard)
-  e.POST("/login", CreateUser)
+	//  e.POST("/login", CreateUser)
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
 func CreateCard(c echo.Context) error {
-  t := time.Now();
-  db, err := sql.Open("mysql", "root:@/ankipan_card")
-  if err != nil {
-    panic(err.Error())
-  }
-  defer db.Close()
+	t := time.Now()
+	db, err := sql.Open("mysql", "root:@/ankipan")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer db.Close()
 
 	problem := c.FormValue("problem")
 	anser := c.FormValue("anser")
@@ -33,10 +32,8 @@ func CreateCard(c echo.Context) error {
 
 	card := models.Card{Problem: problem, Anser: anser, Note: note}
 
-	//query := "INSERT INTO cards(problem_statement, answer_text, memo)values(?,?,?)"
-	//result, err := db.Exec(query, "problem", "anser", "note")
-  query := "INSERT INTO cards values(0,0,?,?,?,?)"
-  result, err := db.Exec(query, "problem","anser","note",t)
+	query := "INSERT INTO cards values(0,0,?,?,?,?)"
+	result, err := db.Exec(query, problem, anser, note, t)
 	if err != nil {
 		panic(err.Error())
 	}
