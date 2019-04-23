@@ -1,29 +1,37 @@
 package main
 
 import (
-	"log"
+	"database/sql"
 	"net/http"
-	"path/filepath"
-	"sync"
-	"text/template"
+
+	"./models"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/labstack/echo"
 )
 
-type templateHandler struct {
-	once     sync.Once
-	filename string
-	templ    *template.Template
-}
-
-func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	t.once.Do(func() {
-		t.templ = template.Must(template.ParseFiles(filepath.Join("templates", t.filename)))
-	})
-	t.templ.Execute(w, nil)
-}
-
 func main() {
-	http.Handle("/", &templateHandler{filename: "chat.html"})
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatal("ListenAndServe:", err)
+	e := echo.New()
+	e.POST("/create", CreateCard)
+	e.Logger.Fatal(e.Start(":8080"))
+}
+
+func CreateCard(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:@/ankipan")
+	if err != nil {
+		panic(err.Error())
 	}
+	defer db.Close()
+
+	card := new(models.Card)
+	if err = c.Bind(card); err != nil {
+		panic(err.Error())
+	}
+
+	//fixme user_idは仮置き
+	query := "INSERT INTO cards(user_id, problem_statement, answer_text, memo, question_time) values(0,?,?,?,NOW())"
+	_, err = db.Exec(query, card.Id, card.Problem, card.Anser)
+	if err != nil {
+		panic(err.Error())
+	}
+	return c.JSON(http.StatusOK, card)
 }
