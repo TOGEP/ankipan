@@ -23,14 +23,14 @@ func CreateCard(c echo.Context) error {
 	}
 	defer db.Close()
 
-  u := new(models.Card)
-  if err = c.Bind(u); err != nil{
-    panic(err.Error())
-  }
+	u := new(models.Card)
+	if err = c.Bind(u); err != nil {
+		panic(err.Error())
+	}
 
 	//fixme user_idは仮置き
 	query := "INSERT INTO cards(user_id, problem_statement, answer_text, memo, question_time) values(0,?,?,?,NOW())"
-	_, err = db.Exec(query,u.Id, u.Problem, u.Anser)
+	_, err = db.Exec(query, u.Id, u.Problem, u.Anser)
 	if err != nil {
 		panic(err.Error())
 	}
