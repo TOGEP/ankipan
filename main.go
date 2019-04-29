@@ -8,20 +8,27 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
 )
+var db *sql.DB
+var err error
 
 func main() {
 	e := echo.New()
+
 	e.POST("/create", CreateCard)
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
-func CreateCard(c echo.Context) error {
-	db, err := sql.Open("mysql", "root:@/ankipan")
-	if err != nil {
-		panic(err.Error())
-	}
-	defer db.Close()
+func getDB() {
 
+  db, err = sql.Open("mysql", "root:@/ankipan")
+  if err !=nil{
+    panic(err.Error())
+  }
+  return
+}
+
+func CreateCard(c echo.Context) error {
+  getDB()
 	card := new(models.Card)
 	if err = c.Bind(card); err != nil {
 		panic(err.Error())
