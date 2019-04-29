@@ -15,6 +15,7 @@ func main() {
 	e := echo.New()
 
 	e.POST("/create", CreateCard)
+  e.POST("/user", CreateUser)
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
