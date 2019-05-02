@@ -52,7 +52,7 @@ func CreateUser(c echo.Context) error {
 		panic(err.Error())
 	}
 
-	query := "INSERT INTO users(name, email, token, uid, create_at) values(?, ?, ?, ?, NOW())"
+	query := "INSERT INTO users(name, email, token, uid, created_at) values(?, ?, ?, ?, NOW())"
 	_, err = db.Exec(query, user.Name, user.Email, user.Token, user.Uid)
 	if err != nil {
 		panic(err.Error())
