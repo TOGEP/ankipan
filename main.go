@@ -21,7 +21,6 @@ func main() {
 }
 
 func getDB() {
-
 	db, err = sql.Open("mysql", "root:@/ankipan")
 	if err != nil {
 		panic(err.Error())
