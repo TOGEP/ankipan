@@ -6,6 +6,7 @@ import (
 
 	"./models"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 	"github.com/labstack/echo"
 )
 
@@ -23,6 +24,15 @@ func getDB() (db *sql.DB, err error) {
 		panic(err.Error())
 	}
 	return db, err
+}
+
+func getUUID() string {
+	u, err := uuid.NewRandom()
+	if err != nil {
+		panic(err.Error())
+	}
+	uu := u.String()
+	return uu
 }
 
 func CreateCard(c echo.Context) error {
@@ -51,7 +61,7 @@ func CreateUser(c echo.Context) error {
 	}
 
 	query := "INSERT INTO users(name, email, token, uid, created_at) values(?, ?, ?, ?, NOW())"
-	_, err = db.Exec(query, user.Name, user.Email, user.Token, user.Uid)
+	_, err = db.Exec(query, user.Name, user.Email, getUUID(), user.Uid)
 	if err != nil {
 		panic(err.Error())
 	}
