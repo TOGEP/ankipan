@@ -17,17 +17,17 @@ func main() {
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
-func getDB()(db *sql.DB,err error) {
-  db, err = sql.Open("mysql", "root:@/ankipan")
-  if err != nil {
+func getDB() (db *sql.DB, err error) {
+	db, err = sql.Open("mysql", "root:@/ankipan")
+	if err != nil {
 		panic(err.Error())
 	}
 	return db, err
 }
 
 func CreateCard(c echo.Context) error {
-  db, err := getDB()
-  defer db.Close()
+	db, err := getDB()
+	defer db.Close()
 	card := new(models.Card)
 	if err = c.Bind(card); err != nil {
 		panic(err.Error())
@@ -43,8 +43,8 @@ func CreateCard(c echo.Context) error {
 }
 
 func CreateUser(c echo.Context) error {
-  db, err := getDB()
-  defer db.Close()
+	db, err := getDB()
+	defer db.Close()
 	user := new(models.User)
 	if err = c.Bind(user); err != nil {
 		panic(err.Error())
