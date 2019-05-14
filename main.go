@@ -6,22 +6,40 @@ import (
 
 	"./models"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 	"github.com/labstack/echo"
 )
 
 func main() {
 	e := echo.New()
+
+	e.HTTPErrorHandler = customHTTPErrorHandler
+
 	e.POST("/create", CreateCard)
+	e.POST("/user", CreateUser)
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
-func CreateCard(c echo.Context) error {
-	db, err := sql.Open("mysql", "root:@/ankipan")
+func getDB() (db *sql.DB, err error) {
+	db, err = sql.Open("mysql", "root:@/ankipan")
 	if err != nil {
 		panic(err.Error())
 	}
-	defer db.Close()
+	return db, err
+}
 
+func getUUID() string {
+	u, err := uuid.NewRandom()
+	if err != nil {
+		panic(err.Error())
+	}
+	uu := u.String()
+	return uu
+}
+
+func CreateCard(c echo.Context) error {
+	db, err := getDB()
+	defer db.Close()
 	card := new(models.Card)
 	if err = c.Bind(card); err != nil {
 		panic(err.Error())
@@ -34,4 +52,20 @@ func CreateCard(c echo.Context) error {
 		panic(err.Error())
 	}
 	return c.JSON(http.StatusOK, card)
+}
+
+func CreateUser(c echo.Context) error {
+	db, err := getDB()
+	defer db.Close()
+	user := new(models.User)
+	if err = c.Bind(user); err != nil {
+		panic(err.Error())
+	}
+
+	query := "INSERT INTO users(name, email, token, uid, created_at) values(?, ?, ?, ?, NOW())"
+	_, err = db.Exec(query, user.Name, user.Email, getUUID(), user.Uid)
+	if err != nil {
+		panic(err.Error())
+	}
+	return c.JSON(http.StatusOK, user)
 }
