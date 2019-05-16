@@ -35,6 +35,7 @@ func main() {
 
 	e.POST("/create", CreateCard)
 	e.POST("/user", CreateUser)
+	e.GET("/cards", GetCards)
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
@@ -86,4 +87,25 @@ func CreateUser(c echo.Context) error {
 		panic(err.Error())
 	}
 	return c.JSON(http.StatusOK, user)
+}
+
+func GetCards(c echo.Context) error {
+	db := gormDBConnect()
+	defer db.Close()
+
+	token := c.QueryParam("token")
+
+	user := models.User{}
+	db.First(&user, "token=?", token)
+
+	if user.Id == 0 {
+		// TODO return error information
+		return c.JSON(http.StatusBadRequest, "")
+	}
+
+	cards := []models.Card{}
+
+	db.Find(&cards, "user_id=?", user.Id)
+
+	return c.JSON(http.StatusOK, cards)
 }
