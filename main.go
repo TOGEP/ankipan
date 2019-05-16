@@ -7,8 +7,26 @@ import (
 	"./models"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo"
 )
+
+func gormDBConnect() *gorm.DB {
+	DBMS := "mysql"
+	USER := "root"
+	DBNAME := "ankipan"
+
+	CONNECT := USER + "@" + "/" + DBNAME
+
+	db, err := gorm.Open(DBMS, CONNECT)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return db
+}
 
 func main() {
 	e := echo.New()
@@ -17,6 +35,7 @@ func main() {
 
 	e.POST("/cards", CreateCard)
 	e.POST("/user", CreateUser)
+	e.GET("/cards", GetCards)
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
@@ -68,4 +87,25 @@ func CreateUser(c echo.Context) error {
 		panic(err.Error())
 	}
 	return c.JSON(http.StatusOK, user)
+}
+
+func GetCards(c echo.Context) error {
+	db := gormDBConnect()
+	defer db.Close()
+
+	token := c.QueryParam("token")
+
+	user := models.User{}
+	db.First(&user, "token=?", token)
+
+	if user.Id == 0 {
+		// TODO return error information
+		return c.JSON(http.StatusBadRequest, "bad token")
+	}
+
+	cards := []models.Card{}
+
+	db.Find(&cards, "user_id=?", user.Id)
+
+	return c.JSON(http.StatusOK, cards)
 }
