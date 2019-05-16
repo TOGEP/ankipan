@@ -5,4 +5,5 @@ type Card struct {
   Problem string `db:"problex_statement" json:"problem_statement"`
   Anser string `db:"anser_text" json:"anser_text"`
   Note string `db:"memo" json:"memo"`
+  SolvedCount int `db:"solved_count" json:"solved_count"`
 }
