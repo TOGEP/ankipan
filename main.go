@@ -15,7 +15,7 @@ func main() {
 
 	e.HTTPErrorHandler = customHTTPErrorHandler
 
-	e.POST("/create", CreateCard)
+	e.POST("/cards", CreateCard)
 	e.POST("/user", CreateUser)
 	e.Logger.Fatal(e.Start(":8080"))
 }
