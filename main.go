@@ -46,8 +46,8 @@ func CreateCard(c echo.Context) error {
 	}
 
 	//fixme user_idは仮置き
-	query := "INSERT INTO cards(user_id, problem_statement, answer_text, memo, question_time) values(0,?,?,?,NOW())"
-	_, err = db.Exec(query, card.Id, card.Problem, card.Anser)
+	query := "INSERT INTO cards(user_id, problem_statement, answer_text, memo, question_time, solved_count) values(0, ?, ?, ?, NOW(), 0)"
+	_, err = db.Exec(query, card.Problem, card.Anser, card.Memo)
 	if err != nil {
 		panic(err.Error())
 	}
