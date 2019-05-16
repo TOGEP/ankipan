@@ -100,7 +100,7 @@ func GetCards(c echo.Context) error {
 
 	if user.Id == 0 {
 		// TODO return error information
-		return c.JSON(http.StatusBadRequest, "")
+		return c.JSON(http.StatusBadRequest, "bad token")
 	}
 
 	cards := []models.Card{}
