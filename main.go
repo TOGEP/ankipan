@@ -12,6 +12,22 @@ import (
 	"github.com/labstack/echo"
 )
 
+func gormDBConnect() *gorm.DB {
+	DBMS := "mysql"
+	USER := "root"
+	DBNAME := "ankipan"
+
+	CONNECT := USER + "@" + "/" + DBNAME
+
+	db, err := gorm.Open(DBMS, CONNECT)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return db
+}
+
 func main() {
 	e := echo.New()
 
