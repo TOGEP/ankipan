@@ -1,4 +1,4 @@
-module github.com/k-nasa/ankipan
+module github.com/TOGEP/ankipan
 
 require (
 	github.com/go-sql-driver/mysql v1.4.1

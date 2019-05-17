@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 
-	"./models"
+	"github.com/TOGEP/ankipan/models"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
