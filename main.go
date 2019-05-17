@@ -36,6 +36,7 @@ func main() {
 	e.POST("/cards", CreateCard)
 	e.POST("/user", CreateUser)
 	e.GET("/cards", GetCards)
+  e.PUT("/anser/:card", UpdateTime)
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
@@ -108,4 +109,15 @@ func GetCards(c echo.Context) error {
 	db.Find(&cards, "user_id=?", user.Id)
 
 	return c.JSON(http.StatusOK, cards)
+}
+
+func UpdateTime(c echo.Context) error{
+  card := c.Param("card")
+	db, err := getDB()
+	defer db.Close()
+
+  if err != nil{
+    panic(err.Error())
+  }
+  return c.JSON(http.StatusOK, card)
 }
