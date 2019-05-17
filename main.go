@@ -109,4 +109,3 @@ func GetCards(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, cards)
 }
-
