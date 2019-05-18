@@ -1,0 +1,14 @@
+version: 2
+jobs:
+  build:
+    environment:
+      - GOPATH: /go
+        GO111MODULE: "on"
+    docker:
+      - image: circleci/golang:1.12
+    working_directory: /go/src/github.com/TOGEP/ankipan
+    steps:
+      - run: echo 'export PATH=${GOPATH}/bin/:${PATH}' >> $BASH_ENV
+      - run: echo $GOPATH
+      - checkout
+      - run: go build
