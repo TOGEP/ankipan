@@ -36,7 +36,7 @@ func main() {
 	e.POST("/cards", CreateCard)
 	e.POST("/user", CreateUser)
 	e.GET("/cards", GetCards)
-  e.PUT("/anser/:card", UpdateTime)
+	e.PUT("/anser/:cardid", UpdateTime)
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
