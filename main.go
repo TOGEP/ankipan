@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"net/http"
+	"time"
 
 	"github.com/TOGEP/ankipan/models"
 	_ "github.com/go-sql-driver/mysql"
@@ -111,13 +112,28 @@ func GetCards(c echo.Context) error {
 	return c.JSON(http.StatusOK, cards)
 }
 
-func UpdateTime(c echo.Context) error{
-  card := c.Param("card")
+func UpdateTime(c echo.Context) error {
+	cardid := c.Param("cardid")
 	db, err := getDB()
 	defer db.Close()
 
-  if err != nil{
-    panic(err.Error())
-  }
-  return c.JSON(http.StatusOK, card)
+	query := "UPDATE cards SET question_time=? WHERE id=?"
+	var cnt int
+	if err = db.QueryRow("SELECT solved_count FROM cards WHERE id=?", cardid).Scan(&cnt); err != nil {
+		panic(err.Error())
+	}
+	t := time.Now()
+	if cnt == 1 {
+		_, err = db.Exec(query, t.Add(1*time.Hour), cardid)
+	} else if cnt == 2 {
+		_, err = db.Exec(query, t.Add(2*time.Hour), cardid)
+	} else if cnt == 3 {
+		_, err = db.Exec(query, t.Add(3*time.Hour), cardid)
+	} else {
+		_, err = db.Exec(query, t.Add(24*time.Hour), cardid)
+	}
+	if err != nil {
+		panic(err.Error())
+	}
+	return c.String(http.StatusOK, "success")
 }
