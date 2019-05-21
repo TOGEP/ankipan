@@ -112,6 +112,7 @@ func GetCards(c echo.Context) error {
 	return c.JSON(http.StatusOK, cards)
 }
 
+
 func UpdateTime(c echo.Context) error {
 	cardid := c.Param("cardid")
 	db, err := getDB()
@@ -137,3 +138,4 @@ func UpdateTime(c echo.Context) error {
 	}
 	return c.String(http.StatusOK, "success")
 }
+

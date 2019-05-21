@@ -13,4 +13,3 @@ sql-migrate up
 export GO111MODULE=on
 go build
 ```
-``
