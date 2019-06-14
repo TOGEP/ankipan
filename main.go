@@ -124,14 +124,15 @@ func UpdateTime(c echo.Context) error {
 		panic(err.Error())
 	}
 	t := time.Now()
+  //FIXME
 	if cnt == 1 {
-		_, err = db.Exec(query, t.Add(1*time.Hour), cardid)
-	} else if cnt == 2 {
-		_, err = db.Exec(query, t.Add(2*time.Hour), cardid)
-	} else if cnt == 3 {
-		_, err = db.Exec(query, t.Add(3*time.Hour), cardid)
-	} else {
 		_, err = db.Exec(query, t.Add(24*time.Hour), cardid)
+	} else if cnt == 2 {
+		_, err = db.Exec(query, t.Add(48*time.Hour), cardid)
+	} else if cnt == 3 {
+		_, err = db.Exec(query, t.Add(96*time.Hour), cardid)
+	} else {
+		_, err = db.Exec(query, t.Add(192*time.Hour), cardid)
 	}
 	if err != nil {
 		panic(err.Error())
