@@ -112,19 +112,21 @@ func GetCards(c echo.Context) error {
 	return c.JSON(http.StatusOK, cards)
 }
 
-
 func UpdateTime(c echo.Context) error {
 	cardid := c.Param("cardid")
 	db, err := getDB()
 	defer db.Close()
 
 	query := "UPDATE cards SET question_time=? WHERE id=?"
+
+	// 何回このカードを復習したか取得
 	var cnt int
 	if err = db.QueryRow("SELECT solved_count FROM cards WHERE id=?", cardid).Scan(&cnt); err != nil {
 		panic(err.Error())
 	}
+
 	t := time.Now()
-  //FIXME
+	//FIXME
 	if cnt == 1 {
 		_, err = db.Exec(query, t.Add(24*time.Hour), cardid)
 	} else if cnt == 2 {
@@ -134,9 +136,10 @@ func UpdateTime(c echo.Context) error {
 	} else {
 		_, err = db.Exec(query, t.Add(192*time.Hour), cardid)
 	}
+
 	if err != nil {
 		panic(err.Error())
 	}
+
 	return c.String(http.StatusOK, "success")
 }
-
