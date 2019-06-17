@@ -10,6 +10,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 func gormDBConnect() *gorm.DB {
@@ -32,6 +33,7 @@ func main() {
 	e := echo.New()
 
 	e.HTTPErrorHandler = customHTTPErrorHandler
+	e.Use(middleware.CORS())
 
 	e.POST("/cards", CreateCard)
 	e.POST("/user", CreateUser)
