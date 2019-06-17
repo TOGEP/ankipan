@@ -117,29 +117,18 @@ func UpdateTime(c echo.Context) error {
 	db, err := getDB()
 	defer db.Close()
 
-	query := "UPDATE cards SET question_time=? WHERE id=?"
-
 	// 何回このカードを復習したか取得
 	var cnt int
 	if err = db.QueryRow("SELECT solved_count FROM cards WHERE id=?", cardid).Scan(&cnt); err != nil {
 		panic(err.Error())
 	}
 
+	// 現在時刻+(24 * cnt)時間後の値をquestion_timeに代入
+	query := "UPDATE cards SET question_time=? WHERE id=?"
 	t := time.Now()
-	//FIXME
-	if cnt == 1 {
-		_, err = db.Exec(query, t.Add(24*time.Hour), cardid)
-	} else if cnt == 2 {
-		_, err = db.Exec(query, t.Add(48*time.Hour), cardid)
-	} else if cnt == 3 {
-		_, err = db.Exec(query, t.Add(96*time.Hour), cardid)
-	} else {
-		_, err = db.Exec(query, t.Add(192*time.Hour), cardid)
-	}
-
+	_, err = db.Exec(query, t.Add(time.Duration(24*int(cnt))*time.Hour), cardid)
 	if err != nil {
 		panic(err.Error())
 	}
-
 	return c.String(http.StatusOK, "success")
 }
