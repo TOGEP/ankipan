@@ -1,4 +1,5 @@
 # ankipan
+[![CircleCI](https://circleci.com/gh/TOGEP/ankipan.svg?style=svg)](https://circleci.com/gh/TOGEP/ankipan)
 
 ## Setup
 
