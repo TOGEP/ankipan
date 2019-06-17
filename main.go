@@ -81,9 +81,21 @@ func CreateUser(c echo.Context) error {
 	db, err := getDB()
 	defer db.Close()
 
+	// FIXME DB connectionを2つ作るのもあれなので統一する
+	gormDB := gormDBConnect()
+	defer db.Close()
+
 	user := new(models.User)
 	if err = c.Bind(user); err != nil {
 		panic(err.Error())
+	}
+
+	responseUser := models.User{}
+	gormDB.First(&responseUser, "uid =?", user.UID)
+
+	// FIXME ID == 0のとき見つからなかったとしている もっといいやり方がありそう
+	if responseUser.ID != 0 {
+		return c.JSON(http.StatusOK, responseUser)
 	}
 
 	// TODO user.Uidがfirebaseに登録されているか確認する必要がある
@@ -93,11 +105,8 @@ func CreateUser(c echo.Context) error {
 	if err != nil {
 		panic(err.Error())
 	}
-	userID, err := result.LastInsertId()
-	responseUser := models.User{}
 
-	gormDB := gormDBConnect()
-	defer db.Close()
+	userID, err := result.LastInsertId()
 	gormDB.First(&responseUser, "id =?", userID)
 
 	return c.JSON(http.StatusOK, responseUser)
