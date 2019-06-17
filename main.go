@@ -89,11 +89,18 @@ func CreateUser(c echo.Context) error {
 	// TODO user.Uidがfirebaseに登録されているか確認する必要がある
 	// https://github.com/TOGEP/ankipan/issues/18
 	query := "INSERT INTO users(name, email, token, uid, created_at) values(?, ?, ?, ?, NOW())"
-	_, err = db.Exec(query, user.Name, user.Email, getUUID(), user.Uid)
+	result, err := db.Exec(query, user.Name, user.Email, getUUID(), user.UID)
 	if err != nil {
 		panic(err.Error())
 	}
-	return c.JSON(http.StatusOK, user)
+	userID, err := result.LastInsertId()
+	responseUser := models.User{}
+
+	gormDB := gormDBConnect()
+	defer db.Close()
+	gormDB.First(&responseUser, "id =?", userID)
+
+	return c.JSON(http.StatusOK, responseUser)
 }
 
 // GetCards userの持ってるcardsを返す
@@ -106,14 +113,14 @@ func GetCards(c echo.Context) error {
 	user := models.User{}
 	db.First(&user, "token=?", token)
 
-	if user.Id == 0 {
+	if user.ID == 0 {
 		// TODO return error information
 		return c.JSON(http.StatusBadRequest, "bad token")
 	}
 
 	cards := []models.Card{}
 
-	db.Find(&cards, "user_id=?", user.Id)
+	db.Find(&cards, "user_id=?", user.ID)
 
 	return c.JSON(http.StatusOK, cards)
 }
