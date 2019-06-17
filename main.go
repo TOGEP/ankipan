@@ -128,7 +128,6 @@ func GetCards(c echo.Context) error {
 	}
 
 	cards := []models.Card{}
-
 	db.Find(&cards, "user_id=?", user.ID)
 
 	return c.JSON(http.StatusOK, cards)
