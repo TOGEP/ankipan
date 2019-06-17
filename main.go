@@ -56,6 +56,7 @@ func getUUID() string {
 	return uu
 }
 
+// CreateCard  カードを作成
 func CreateCard(c echo.Context) error {
 	db, err := getDB()
 	defer db.Close()
@@ -73,14 +74,18 @@ func CreateCard(c echo.Context) error {
 	return c.JSON(http.StatusOK, card)
 }
 
+// CreateUser 新しいユーザーを登録する
 func CreateUser(c echo.Context) error {
 	db, err := getDB()
 	defer db.Close()
+
 	user := new(models.User)
 	if err = c.Bind(user); err != nil {
 		panic(err.Error())
 	}
 
+	// TODO user.Uidがfirebaseに登録されているか確認する必要がある
+	// https://github.com/TOGEP/ankipan/issues/18
 	query := "INSERT INTO users(name, email, token, uid, created_at) values(?, ?, ?, ?, NOW())"
 	_, err = db.Exec(query, user.Name, user.Email, getUUID(), user.Uid)
 	if err != nil {
@@ -89,6 +94,7 @@ func CreateUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
+// GetCards userの持ってるcardsを返す
 func GetCards(c echo.Context) error {
 	db := gormDBConnect()
 	defer db.Close()
