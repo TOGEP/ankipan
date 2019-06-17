@@ -12,3 +12,4 @@ jobs:
       - run: echo $GOPATH
       - checkout
       - run: go build
+      - run: go tool vet ./
