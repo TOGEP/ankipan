@@ -10,6 +10,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 func gormDBConnect() *gorm.DB {
@@ -32,6 +33,7 @@ func main() {
 	e := echo.New()
 
 	e.HTTPErrorHandler = customHTTPErrorHandler
+	e.Use(middleware.CORS())
 
 	e.POST("/cards", CreateCard)
 	e.POST("/user", CreateUser)
@@ -56,6 +58,7 @@ func getUUID() string {
 	return uu
 }
 
+// CreateCard  カードを作成
 func CreateCard(c echo.Context) error {
 	db, err := getDB()
 	defer db.Close()
@@ -73,22 +76,43 @@ func CreateCard(c echo.Context) error {
 	return c.JSON(http.StatusOK, card)
 }
 
+// CreateUser 新しいユーザーを登録する
 func CreateUser(c echo.Context) error {
 	db, err := getDB()
 	defer db.Close()
+
+	// FIXME DB connectionを2つ作るのもあれなので統一する
+	gormDB := gormDBConnect()
+	defer db.Close()
+
 	user := new(models.User)
 	if err = c.Bind(user); err != nil {
 		panic(err.Error())
 	}
 
+	responseUser := models.User{}
+	gormDB.First(&responseUser, "uid =?", user.UID)
+
+	// FIXME ID == 0のとき見つからなかったとしている もっといいやり方がありそう
+	if responseUser.ID != 0 {
+		return c.JSON(http.StatusOK, responseUser)
+	}
+
+	// TODO user.Uidがfirebaseに登録されているか確認する必要がある
+	// https://github.com/TOGEP/ankipan/issues/18
 	query := "INSERT INTO users(name, email, token, uid, created_at) values(?, ?, ?, ?, NOW())"
-	_, err = db.Exec(query, user.Name, user.Email, getUUID(), user.Uid)
+	result, err := db.Exec(query, user.Name, user.Email, getUUID(), user.UID)
 	if err != nil {
 		panic(err.Error())
 	}
-	return c.JSON(http.StatusOK, user)
+
+	userID, err := result.LastInsertId()
+	gormDB.First(&responseUser, "id =?", userID)
+
+	return c.JSON(http.StatusOK, responseUser)
 }
 
+// GetCards userの持ってるcardsを返す
 func GetCards(c echo.Context) error {
 	db := gormDBConnect()
 	defer db.Close()
@@ -98,14 +122,13 @@ func GetCards(c echo.Context) error {
 	user := models.User{}
 	db.First(&user, "token=?", token)
 
-	if user.Id == 0 {
+	if user.ID == 0 {
 		// TODO return error information
 		return c.JSON(http.StatusBadRequest, "bad token")
 	}
 
 	cards := []models.Card{}
-
-	db.Find(&cards, "user_id=?", user.Id)
+	db.Find(&cards, "user_id=?", user.ID)
 
 	return c.JSON(http.StatusOK, cards)
 }
