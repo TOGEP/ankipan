@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"math"
 	"net/http"
 	"time"
 
@@ -113,6 +114,7 @@ func GetCards(c echo.Context) error {
 }
 
 func UpdateTime(c echo.Context) error {
+	//TODO 問合せしてきたユーザがこのカードを持っているか確認する
 	cardid := c.Param("cardid")
 	db, err := getDB()
 	defer db.Close()
@@ -123,12 +125,13 @@ func UpdateTime(c echo.Context) error {
 		panic(err.Error())
 	}
 
-	// 現在時刻+(24 * cnt)時間後の値をquestion_timeに代入
-	query := "UPDATE cards SET question_time=? WHERE id=?"
+	// 現在時刻+(24*2^cnt)時間後の値をquestion_timeに代入
 	t := time.Now()
-	_, err = db.Exec(query, t.Add(time.Duration(24*int(cnt))*time.Hour), cardid)
+	query := "UPDATE cards SET question_time=? WHERE id=?"
+	_, err = db.Exec(query, t.Add(time.Duration(24*math.Pow(2, float64(cnt)))*time.Hour), cardid)
 	if err != nil {
 		panic(err.Error())
 	}
+
 	return c.String(http.StatusOK, "success")
 }
