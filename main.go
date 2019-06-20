@@ -130,7 +130,7 @@ func UpdateTime(c echo.Context) error {
 	query := "UPDATE cards SET question_time=? WHERE id=?"
 	_, err = db.Exec(query, t.Add(time.Duration(24*math.Pow(2, float64(cnt)))*time.Hour), cardid)
 	if err != nil {
-		panic(err.Error())
+		return c.String(http.StatusInternalServerError, "更新に失敗")
 	}
 
 	return c.String(http.StatusOK, "success")
