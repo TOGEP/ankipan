@@ -68,7 +68,7 @@ func CreateCard(c echo.Context) error {
 	}
 
 	//fixme user_idは仮置き
-	query := "INSERT INTO cards(user_id, problem_statement, answer_text, memo, question_time, solved_count) values(0, ?, ?, ?, NOW(), 0)"
+	query := "INSERT INTO cards(user_id, problem_statement, answer_text, memo) values(0, ?, ?, ?)"
 	_, err = db.Exec(query, card.Problem, card.Anser, card.Memo)
 	if err != nil {
 		panic(err.Error())
@@ -100,7 +100,7 @@ func CreateUser(c echo.Context) error {
 
 	// TODO user.Uidがfirebaseに登録されているか確認する必要がある
 	// https://github.com/TOGEP/ankipan/issues/18
-	query := "INSERT INTO users(name, email, token, uid, created_at) values(?, ?, ?, ?, NOW())"
+	query := "INSERT INTO users(name, email, token, uid) values(?, ?, ?, ?)"
 	result, err := db.Exec(query, user.Name, user.Email, getUUID(), user.UID)
 	if err != nil {
 		panic(err.Error())
