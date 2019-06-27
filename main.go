@@ -62,18 +62,22 @@ func getUUID() string {
 func CreateCard(c echo.Context) error {
 	db, err := getDB()
 	defer db.Close()
-	card := new(models.Card)
-	if err = c.Bind(card); err != nil {
+	request := new(models.CreateCardRequest)
+	if err = c.Bind(request); err != nil {
 		panic(err.Error())
 	}
 
+	user := models.User{}
+	gormDBConnect().First(&user, "token=?", request.Token)
+
 	//fixme user_idは仮置き
-	query := "INSERT INTO cards(user_id, problem_statement, answer_text, memo, question_time, solved_count) values(0, ?, ?, ?, NOW(), 0)"
-	_, err = db.Exec(query, card.Problem, card.Anser, card.Memo)
+	query := "INSERT INTO cards(user_id, problem_statement, answer_text, memo, question_time, solved_count) values(?, ?, ?, ?, NOW(), 0)"
+	_, err = db.Exec(query, user.ID, request.Problem, request.Anser, request.Memo)
 	if err != nil {
 		panic(err.Error())
 	}
-	return c.JSON(http.StatusOK, card)
+
+	return c.JSON(http.StatusOK, "success")
 }
 
 // CreateUser 新しいユーザーを登録する
