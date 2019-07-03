@@ -119,6 +119,11 @@ func GetCards(c echo.Context) error {
 
 	token := c.QueryParam("token")
 
+	// NOTE nilのときに文字列のnullが返ってくる
+	if token == "null" {
+		return c.JSON(http.StatusBadRequest, "token is null")
+	}
+
 	user := models.User{}
 	db.First(&user, "token=?", token)
 
