@@ -6,7 +6,7 @@ create table cards (
   problem_statement text not null,
   answer_text text not null,
   memo text not null,
-  question_time datetime not null
+  question_time datetime not null default NOW()
 );
 
 -- +migrate Down
