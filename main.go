@@ -104,7 +104,7 @@ func CreateUser(c echo.Context) error {
 
 	// TODO user.Uidがfirebaseに登録されているか確認する必要がある
 	// https://github.com/TOGEP/ankipan/issues/18
-	query := "INSERT INTO users(name, email, token, uid, created_at) values(?, ?, ?, ?, NOW())"
+	query := "INSERT INTO users(name, email, token, uid) values(?, ?, ?, ?)"
 	result, err := db.Exec(query, user.Name, user.Email, getUUID(), user.UID)
 	if err != nil {
 		panic(err.Error())
@@ -122,6 +122,11 @@ func GetCards(c echo.Context) error {
 	defer db.Close()
 
 	token := c.QueryParam("token")
+
+	// NOTE nilのときに文字列のnullが返ってくる
+	if token == "null" {
+		return c.JSON(http.StatusBadRequest, "token is null")
+	}
 
 	user := models.User{}
 	db.First(&user, "token=?", token)
