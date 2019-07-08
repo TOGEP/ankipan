@@ -134,5 +134,6 @@ func UpdateTime(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "更新に失敗")
 	}
 
-	return c.String(http.StatusOK, "success")
+	_, err = db.Exec("UPDATE cards SET solved_count=? WHERE id=?", cnt+1, cardid)
+	return c.String(http.StatusOK, fmt.Sprintf("%v", 24*math.Pow(2, float64(cnt)))+"時間後に設定したよ")
 }
