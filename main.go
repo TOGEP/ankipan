@@ -69,8 +69,7 @@ func CreateCard(c echo.Context) error {
 	}
 
 	//fixme user_idは仮置き
-	query := "INSERT INTO cards(user_id, problem_statement, answer_text, memo, question_time, solved_count) values(0, ?, ?, ?, NOW(), 0)"
-	_, err = db.Exec(query, card.Problem, card.Anser, card.Memo)
+	_, err = db.Exec("INSERT INTO cards(user_id, problem_statement, answer_text, memo, question_time, solved_count) values(0, ?, ?, ?, NOW(), 0)", card.Problem, card.Anser, card.Memo)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -85,8 +84,7 @@ func CreateUser(c echo.Context) error {
 		panic(err.Error())
 	}
 
-	query := "INSERT INTO users(name, email, token, uid, created_at) values(?, ?, ?, ?, NOW())"
-	_, err = db.Exec(query, user.Name, user.Email, getUUID(), user.Uid)
+	_, err = db.Exec("INSERT INTO users(name, email, token, uid, created_at) values(?, ?, ?, ?, NOW())", user.Name, user.Email, getUUID(), user.Uid)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -128,8 +126,7 @@ func UpdateTime(c echo.Context) error {
 
 	// 現在時刻+(24*2^cnt)時間後の値をquestion_timeに代入
 	t := time.Now()
-	query := "UPDATE cards SET question_time=? WHERE id=?"
-	_, err = db.Exec(query, t.Add(time.Duration(24*math.Pow(2, float64(cnt)))*time.Hour), cardid)
+	_, err = db.Exec("UPDATE cards SET question_time=? WHERE id=?", t.Add(time.Duration(24*math.Pow(2, float64(cnt)))*time.Hour), cardid)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "更新に失敗")
 	}
