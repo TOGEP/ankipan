@@ -2,7 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
+	"math"
 	"net/http"
+	"time"
 
 	"github.com/TOGEP/ankipan/models"
 	_ "github.com/go-sql-driver/mysql"
@@ -38,6 +41,7 @@ func main() {
 	e.POST("/cards", CreateCard)
 	e.POST("/user", CreateUser)
 	e.GET("/cards", GetCards)
+	e.PUT("/anser/:cardid", UpdateTime)
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
@@ -140,4 +144,27 @@ func GetCards(c echo.Context) error {
 	db.Find(&cards, "user_id=?", user.ID)
 
 	return c.JSON(http.StatusOK, cards)
+}
+
+func UpdateTime(c echo.Context) error {
+	//TODO 問合せしてきたユーザがこのカードを持っているか確認する
+	cardid := c.Param("cardid")
+	db, err := getDB()
+	defer db.Close()
+
+	// 何回このカードを復習したか取得
+	var cnt int
+	if err = db.QueryRow("SELECT solved_count FROM cards WHERE id=?", cardid).Scan(&cnt); err != nil {
+		panic(err.Error())
+	}
+
+	// 現在時刻+(24*2^cnt)時間後の値をquestion_timeに代入
+	t := time.Now()
+	_, err = db.Exec("UPDATE cards SET question_time=? WHERE id=?", t.Add(time.Duration(24*math.Pow(2, float64(cnt)))*time.Hour), cardid)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "更新に失敗")
+	}
+
+	_, err = db.Exec("UPDATE cards SET solved_count=? WHERE id=?", cnt+1, cardid)
+	return c.String(http.StatusOK, fmt.Sprintf("%v", 24*math.Pow(2, float64(cnt)))+"時間後に設定したよ")
 }
