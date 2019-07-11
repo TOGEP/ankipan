@@ -6,7 +6,7 @@ create table users (
   email varchar(255) not null,
   token varchar(255) not null unique,
   uid varchar(255) not null unique,
-  created_at datetime not null
+  created_at datetime not null default NOW()
 );
 
 

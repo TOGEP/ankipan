@@ -13,6 +13,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 func gormDBConnect() *gorm.DB {
@@ -35,6 +36,7 @@ func main() {
 	e := echo.New()
 
 	e.HTTPErrorHandler = customHTTPErrorHandler
+	e.Use(middleware.CORS())
 
 	e.POST("/cards", CreateCard)
 	e.POST("/user", CreateUser)
@@ -60,54 +62,86 @@ func getUUID() string {
 	return uu
 }
 
+// CreateCard  カードを作成
 func CreateCard(c echo.Context) error {
 	db, err := getDB()
 	defer db.Close()
-	card := new(models.Card)
-	if err = c.Bind(card); err != nil {
+	request := new(models.CreateCardRequest)
+	if err = c.Bind(request); err != nil {
 		panic(err.Error())
 	}
 
+	user := models.User{}
+	gormDBConnect().First(&user, "token=?", request.Token)
+
 	//fixme user_idは仮置き
-	_, err = db.Exec("INSERT INTO cards(user_id, problem_statement, answer_text, memo, question_time, solved_count) values(0, ?, ?, ?, NOW(), 0)", card.Problem, card.Anser, card.Memo)
+	query := "INSERT INTO cards(user_id, problem_statement, answer_text, memo, question_time, solved_count) values(?, ?, ?, ?, NOW(), 0)"
+	_, err = db.Exec(query, user.ID, request.Problem, request.Anser, request.Memo)
 	if err != nil {
 		panic(err.Error())
 	}
-	return c.JSON(http.StatusOK, card)
+
+	return c.JSON(http.StatusOK, "success")
 }
 
+// CreateUser 新しいユーザーを登録する
 func CreateUser(c echo.Context) error {
 	db, err := getDB()
 	defer db.Close()
+
+	// FIXME DB connectionを2つ作るのもあれなので統一する
+	gormDB := gormDBConnect()
+	defer db.Close()
+
 	user := new(models.User)
 	if err = c.Bind(user); err != nil {
 		panic(err.Error())
 	}
 
-	_, err = db.Exec("INSERT INTO users(name, email, token, uid, created_at) values(?, ?, ?, ?, NOW())", user.Name, user.Email, getUUID(), user.Uid)
+	responseUser := models.User{}
+	gormDB.First(&responseUser, "uid =?", user.UID)
+
+	// FIXME ID == 0のとき見つからなかったとしている もっといいやり方がありそう
+	if responseUser.ID != 0 {
+		return c.JSON(http.StatusOK, responseUser)
+	}
+
+	// TODO user.Uidがfirebaseに登録されているか確認する必要がある
+	// https://github.com/TOGEP/ankipan/issues/18
+	query := "INSERT INTO users(name, email, token, uid) values(?, ?, ?, ?)"
+	result, err := db.Exec(query, user.Name, user.Email, getUUID(), user.UID)
 	if err != nil {
 		panic(err.Error())
 	}
-	return c.JSON(http.StatusOK, user)
+
+	userID, err := result.LastInsertId()
+	gormDB.First(&responseUser, "id =?", userID)
+
+	return c.JSON(http.StatusOK, responseUser)
 }
 
+// GetCards userの持ってるcardsを返す
 func GetCards(c echo.Context) error {
 	db := gormDBConnect()
 	defer db.Close()
 
 	token := c.QueryParam("token")
 
+	// NOTE nilのときに文字列のnullが返ってくる
+	if token == "null" {
+		return c.JSON(http.StatusBadRequest, "token is null")
+	}
+
 	user := models.User{}
 	db.First(&user, "token=?", token)
 
-	if user.Id == 0 {
+	if user.ID == 0 {
 		// TODO return error information
 		return c.JSON(http.StatusBadRequest, "bad token")
 	}
 
 	cards := []models.Card{}
-
-	db.Find(&cards, "user_id=?", user.Id)
+	db.Find(&cards, "user_id=?", user.ID)
 
 	return c.JSON(http.StatusOK, cards)
 }
