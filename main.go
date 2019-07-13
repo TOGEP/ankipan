@@ -75,8 +75,7 @@ func CreateCard(c echo.Context) error {
 	gormDBConnect().First(&user, "token=?", request.Token)
 
 	//fixme user_idは仮置き
-	query := "INSERT INTO cards(user_id, problem_statement, answer_text, memo, question_time, solved_count) values(?, ?, ?, ?, NOW(), 0)"
-	_, err = db.Exec(query, user.ID, request.Problem, request.Anser, request.Memo)
+	_, err = db.Exec("INSERT INTO cards(user_id, problem_statement, answer_text, memo, question_time, solved_count) values(?, ?, ?, ?, NOW(), 0)", user.ID, request.Problem, request.Anser, request.Memo)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -108,8 +107,7 @@ func CreateUser(c echo.Context) error {
 
 	// TODO user.Uidがfirebaseに登録されているか確認する必要がある
 	// https://github.com/TOGEP/ankipan/issues/18
-	query := "INSERT INTO users(name, email, token, uid) values(?, ?, ?, ?)"
-	result, err := db.Exec(query, user.Name, user.Email, getUUID(), user.UID)
+	result, err := db.Exec("INSERT INTO users(name, email, token, uid) values(?, ?, ?, ?)", user.Name, user.Email, getUUID(), user.UID)
 	if err != nil {
 		panic(err.Error())
 	}
